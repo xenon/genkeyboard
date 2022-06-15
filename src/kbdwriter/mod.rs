@@ -1,6 +1,7 @@
 use std::collections::{btree_map::Iter, BTreeMap};
 
 pub mod emacs;
+pub mod list;
 pub mod vimfn;
 
 #[derive(Clone)]
@@ -70,6 +71,11 @@ impl KbdMap {
         if !self.keymap.contains_key(&key_sequence) {
             self.keymap.insert(key_sequence, mapped_value);
             return true;
+        } else {
+            eprintln!(
+                "Duplicated key sequence: {} for value {}",
+                key_sequence, mapped_value
+            );
         }
         return false;
     }

@@ -1,6 +1,8 @@
+use std::fs;
+
 use kbdwriter::KbdWriter;
 
-use crate::kbdwriter::{emacs::EmacsKbdWriter, vimfn::VimFnKbdWriter};
+use crate::kbdwriter::{emacs::EmacsKbdWriter, list::ListKbdWriter, vimfn::VimFnKbdWriter};
 
 mod compose;
 mod kbdlayout;
@@ -12,6 +14,7 @@ fn main() {
     //let emacs = EmacsKbdWriter::new(&kbd);
     //print!("{}", emacs);
 
-    let vim = VimFnKbdWriter::new(&kbd);
-    print!("{}", vim);
+    let list = ListKbdWriter::new(&kbd);
+    print!("{}", list);
+    fs::write("kbd.txt", format!("{}", list)).expect("Unable to write file");
 }

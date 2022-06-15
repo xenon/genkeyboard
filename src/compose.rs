@@ -102,4 +102,11 @@ mod tests {
     fn rough() {
         assert_eq!(compose_vec(vec!['α', '\u{314}']), vec!['ἁ'])
     }
+    #[test]
+    fn diaresis() {
+        assert_eq!(
+            compose_vec(vec!['υ', '\u{304}', '\u{308}']),
+            vec!['ῡ', '\u{308}']
+        );
+    }
 }
