@@ -19,6 +19,7 @@ impl CompositionMap {
             ("turned comma", char::from_u32(0x312).unwrap()),
             ("comma", char::from_u32(0x313).unwrap()),
             ("reversed comma", char::from_u32(0x314).unwrap()),
+            ("iota", char::from_u32(0x345).unwrap()),
         ]);
         Self { above }
     }
@@ -91,5 +92,13 @@ mod tests {
             compose_vec(vec!['α', '\u{313}', '\u{301}', 'ρ', 'χ', 'ω']),
             vec!['ἄ', 'ρ', 'χ', 'ω']
         );
+    }
+    #[test]
+    fn iota() {
+        assert_eq!(compose_vec(vec!['α', '\u{345}']), vec!['ᾳ'])
+    }
+    #[test]
+    fn rough() {
+        assert_eq!(compose_vec(vec!['α', '\u{314}']), vec!['ἁ'])
     }
 }
