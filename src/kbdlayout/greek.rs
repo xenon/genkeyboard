@@ -93,7 +93,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
         ("macron", (modifier_macron, Some("macron"))),
         ("acute", (modifier_acute, Some("acute"))),
         ("grave", (modifier_grave, Some("grave"))),
-        ("circumflex", (modifier_circumflex, Some("circumflex"))),
+        ("circumflex", (modifier_circumflex, Some("periposmeni"))),
         ("smooth", (modifier_smooth, Some("comma"))),
         ("rough", (modifier_rough, Some("reversed comma"))),
         ("iota", (modifier_iota, Some("iota"))),
@@ -101,39 +101,32 @@ pub fn gen(keyboard: &mut KbdWriter) {
         ("breve", (modifier_breve, Some("breve"))),
     ]);
 
-    let alphabet: HashMap<&str, char> = HashMap::from([
-        ("a", 'α'),
+    let consonants: HashMap<&str, char> = HashMap::from([
         ("b", 'β'),
         ("g", 'γ'),
         ("d", 'δ'),
-        ("e", 'ε'),
         ("z", 'ζ'),
-        ("h", 'η'), // non-phonetic
         ("th", 'θ'),
-        ("i", 'ι'),
         ("k", 'κ'),
         ("l", 'λ'),
         ("m", 'μ'),
         ("n", 'ν'),
         ("ks", 'ξ'),
-        ("o", 'ο'),
         ("p", 'π'),
         ("r", 'ρ'),
         ("s", 'σ'),
         ("t", 'τ'),
-        ("u", 'υ'),
         ("ph", 'φ'),
         ("kh", 'χ'),
         ("ps", 'ψ'),
-        ("v", 'ω'), // non-phonetic
     ]);
     let alphabet_doubles: Vec<(String, char)> = vec![
+        ("h".to_string(), 'η'), // non-phonetic
         ("c".to_string(), 'κ'),
-        (vec!['e', modifier_macron].iter().collect(), 'η'),
         ("f".to_string(), 'φ'),
         ("ch".to_string(), 'χ'),
         ("x".to_string(), 'ξ'),
-        (vec!['o', modifier_macron].iter().collect(), 'ω'),
+        ("v".to_string(), 'ω'), // non-phonetic
     ];
     let final_consonants: Vec<(char, char)> = vec![('σ', 'ς')];
     let all_vowels: Vec<char> = vec!['α', 'ε', 'η', 'ι', 'ο', 'υ', 'ω'];
@@ -146,7 +139,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
 
     // basic alphabet
     let mut alphabet_map = KbdMap::new();
-    for (sequence, letter) in alphabet.iter() {
+    for (sequence, letter) in consonants.iter() {
         // lowercase
         alphabet_map.add(sequence.to_string(), letter.to_string());
         // capital
@@ -168,7 +161,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
             alphabet_map.add(cap_seq, cap_letter);
         }
     }
-    keyboard.write_section("alphabet".to_string(), alphabet_map);
+    keyboard.write_section("consonants".to_string(), alphabet_map);
 
     // doubled alphabet
     let mut alphabet_doubles_map = KbdMap::new();
@@ -194,12 +187,15 @@ pub fn gen(keyboard: &mut KbdWriter) {
             alphabet_doubles_map.add(cap_seq, cap_letter);
         }
     }
-    keyboard.write_section("alphabet doubles".to_string(), alphabet_doubles_map);
+    keyboard.write_section(
+        "alphabet/consonant doubles".to_string(),
+        alphabet_doubles_map,
+    );
 
     // final consonants
     let mut final_consonants_map = KbdMap::new();
     for (base_letter, final_letter) in final_consonants {
-        for (key_seq, letter) in alphabet.iter() {
+        for (key_seq, letter) in consonants.iter() {
             if base_letter == *letter {
                 let mut new_seq: String = (*key_seq).to_string();
                 new_seq.push(' ');
@@ -219,11 +215,91 @@ pub fn gen(keyboard: &mut KbdWriter) {
     }
     keyboard.write_section("punctuation".to_string(), punctuation_map);
 
+    // accents
+    let mut accents_map: KbdMap = KbdMap::new();
+    gen_vowels(
+        &mut accents_map,
+        vec![],
+        &vowel_key,
+        &short_vowels,
+        &long_vowels,
+        &modifier_map,
+        &compositions,
+    );
+    gen_vowels(
+        &mut accents_map,
+        vec!["acute"],
+        &vowel_key,
+        &short_vowels,
+        &long_vowels,
+        &modifier_map,
+        &compositions,
+    );
+    gen_vowels(
+        &mut accents_map,
+        vec!["grave"],
+        &vowel_key,
+        &short_vowels,
+        &long_vowels,
+        &modifier_map,
+        &compositions,
+    );
+    /* probably a bunch of incorrect ones here
+    gen_vowels(
+        &mut accents_map,
+        vec!["breve"],
+        &vowel_key,
+        &short_vowels,
+        &long_vowels,
+        &modifier_map,
+        &compositions,
+    );
+    gen_vowels(
+        &mut accents_map,
+        vec!["diaresis"],
+        &vowel_key,
+        &short_vowels,
+        &long_vowels,
+        &modifier_map,
+        &compositions,
+    );
+    */
+    /*
+    TODO: there should not be circumflex on explicitly short vowels like ε, ο
+    gen_vowels(
+        &mut accents_map,
+        vec!["circumflex"],
+        &vowel_key,
+        &short_vowels,
+        &long_vowels,
+        &modifier_map,
+        &compositions,
+    );*/
+    keyboard.write_section("vowels + accent combinations".to_string(), accents_map);
+
     // smooth breathing
     let mut smooth_breathing_map = KbdMap::new();
     gen_vowels(
         &mut smooth_breathing_map,
         vec!["smooth"],
+        &vowel_key,
+        &short_vowels,
+        &long_vowels,
+        &modifier_map,
+        &compositions,
+    );
+    gen_vowels(
+        &mut smooth_breathing_map,
+        vec!["smooth", "acute"],
+        &vowel_key,
+        &short_vowels,
+        &long_vowels,
+        &modifier_map,
+        &compositions,
+    );
+    gen_vowels(
+        &mut smooth_breathing_map,
+        vec!["smooth", "grave"],
         &vowel_key,
         &short_vowels,
         &long_vowels,
@@ -237,6 +313,24 @@ pub fn gen(keyboard: &mut KbdWriter) {
     gen_vowels(
         &mut rough_breathing_map,
         vec!["rough"],
+        &vowel_key,
+        &short_vowels,
+        &long_vowels,
+        &modifier_map,
+        &compositions,
+    );
+    gen_vowels(
+        &mut rough_breathing_map,
+        vec!["rough", "acute"],
+        &vowel_key,
+        &short_vowels,
+        &long_vowels,
+        &modifier_map,
+        &compositions,
+    );
+    gen_vowels(
+        &mut rough_breathing_map,
+        vec!["rough", "grave"],
         &vowel_key,
         &short_vowels,
         &long_vowels,

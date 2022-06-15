@@ -19,6 +19,7 @@ impl CompositionMap {
             ("turned comma", char::from_u32(0x312).unwrap()),
             ("comma", char::from_u32(0x313).unwrap()),
             ("reversed comma", char::from_u32(0x314).unwrap()),
+            ("periposmeni", char::from_u32(0x342).unwrap()),
             ("iota", char::from_u32(0x345).unwrap()),
         ]);
         Self { above }
