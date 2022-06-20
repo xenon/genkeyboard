@@ -85,11 +85,6 @@ impl KbdWriter {
     pub fn write_section(&mut self, title: String, keymap: KbdMap) {
         self.sections.push((title, keymap));
     }
-    pub fn write_sections(&mut self, sections: Vec<(String, KbdMap)>) {
-        for (title, keymap) in sections {
-            self.write_section(title, keymap);
-        }
-    }
 }
 
 pub struct KbdMap {

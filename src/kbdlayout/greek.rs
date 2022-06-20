@@ -392,7 +392,6 @@ pub fn gen(keyboard: &mut KbdWriter) {
         ("v".to_string(), 'ω'), // non-phonetic
     ];
     let final_consonants: Vec<(char, char)> = vec![('σ', 'ς')];
-    let all_vowels: Vec<char> = vec!['α', 'ε', 'η', 'ι', 'ο', 'υ', 'ω'];
 
     let vowel_key: Vec<char> = vec!['a', 'e', 'i', 'o', 'u'];
     let short_vowels: Vec<char> = vec!['α', 'ε', 'ι', 'ο', 'υ'];

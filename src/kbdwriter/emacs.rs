@@ -2,7 +2,7 @@ use std::{cell::RefCell, fmt::Display};
 
 use convert_case::{Case, Casing};
 
-use super::{KbdMap, KbdMetaData, KbdWriter};
+use super::{KbdMetaData, KbdWriter};
 
 pub struct EmacsKbdWriter<'a> {
     kbd: RefCell<&'a KbdWriter>,
