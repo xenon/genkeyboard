@@ -18,12 +18,12 @@ pub mod latin;
     VariantCount,
 )]
 #[repr(u8)]
-pub enum KeyboardLayout {
+pub enum Layout {
     Greek,
     Latin,
 }
 
-impl fmt::Display for KeyboardLayout {
+impl fmt::Display for Layout {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }

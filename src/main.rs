@@ -3,7 +3,7 @@ use std::fmt::Write;
 use clap::Parser;
 use convert_case::{Case, Casing};
 
-use kbdlayout::KeyboardLayout;
+use kbdlayout::Layout;
 use kbdwriter::{Format, KbdWriter};
 
 use crate::kbdwriter::{emacs::EmacsKbdWriter, list::ListKbdWriter, vimfn::VimFnKbdWriter};
@@ -21,7 +21,7 @@ enum Command {
 #[derive(Parser, Default, Debug)]
 struct GenArgs {
     #[clap(short, long, arg_enum, required = true)]
-    layout: Option<KeyboardLayout>,
+    layout: Option<Layout>,
     #[clap(short, long, arg_enum)]
     format: Format,
     #[clap(short, long, value_hint = clap::ValueHint::FilePath)]
@@ -31,10 +31,10 @@ struct GenArgs {
 fn main() {
     match Command::parse() {
         Command::ListLayouts => {
-            for layout in KeyboardLayout::Greek as u8..KeyboardLayout::VARIANT_COUNT as u8 {
+            for layout in Layout::Greek as u8..Layout::VARIANT_COUNT as u8 {
                 println!(
                     "{}",
-                    KeyboardLayout::try_from(layout)
+                    Layout::try_from(layout)
                         .unwrap()
                         .to_string()
                         .to_case(Case::Kebab)
@@ -55,10 +55,10 @@ fn main() {
         Command::Generate(args) => {
             let mut kbd = KbdWriter::new();
             match args.layout.unwrap() {
-                KeyboardLayout::Greek => {
+                Layout::Greek => {
                     kbdlayout::greek::gen(&mut kbd);
                 }
-                KeyboardLayout::Latin => {
+                Layout::Latin => {
                     kbdlayout::latin::gen(&mut kbd, true);
                 }
             }
