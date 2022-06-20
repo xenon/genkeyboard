@@ -525,17 +525,6 @@ pub fn gen(keyboard: &mut KbdWriter) {
         &compositions,
         Some((true, false)),
     );
-    gen_vowels_both(
-        &mut accents_nobreath_map,
-        vec!["breve"],
-        &vowel_key_ambiguous,
-        &ambiguous_vowels,
-        &vowel_key_ambiguous,
-        &ambiguous_vowels,
-        &modifier_map,
-        &compositions,
-        Some((true, false)),
-    );
     // diaresis
     gen_class_both(
         &mut accents_nobreath_map,
