@@ -57,7 +57,7 @@ This is by no means comprehensive and is only intended to give some intuition to
 - Start in ```src/kbdlayout/<MYLAYOUT>.rs```
 - Make a function which takes in a ```keyboard: &mut KbdWriter```
 - Set the metadata of your new ```keyboard``` layout
-- Create various mapping sections called ```KbdMap```s and write these sections to ```keboard```
+- Create various mapping sections called ```KbdMap```s and write these sections to ```keyboard```
 ### making it accessible by command line args
 - Add a new enum entry ```<MYLAYOUT>``` to the ```Layout``` enum in  ```src/kbdlayout/mod.rs```
 - In ```src/main.rs``` make the match statement on ```args.layout``` call your new layout function.
