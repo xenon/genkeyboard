@@ -16,7 +16,13 @@ pub fn gen(keyboard: &mut KbdWriter) {
         modifier_map: &HashMap<&str, (char, Option<&str>)>,
         compositions: &CompositionMap,
         short_or_long_selector: Option<(bool, bool)>,
+        capitals: bool,
     ) {
+        let mut local_short_vowels = short_vowels.clone();
+        let mut local_vowel_key_short = vowel_key_short.clone();
+        let mut local_long_vowels = long_vowels.clone();
+        let mut local_vowel_key_long = vowel_key_long.clone();
+
         let (short, long) = short_or_long_selector.unwrap_or((true, true));
         let modifier_keys: VecDeque<char> = modifiers
             .iter()
@@ -28,9 +34,17 @@ pub fn gen(keyboard: &mut KbdWriter) {
             .flatten()
             .collect();
         if short {
-            for (index, vowel) in short_vowels.iter().enumerate() {
+            if capitals {
+                for letter in local_vowel_key_short.iter_mut() {
+                    *letter = letter.to_uppercase().to_string().chars().nth(0).unwrap();
+                }
+                for letter in local_short_vowels.iter_mut() {
+                    *letter = letter.to_uppercase().to_string().chars().nth(0).unwrap();
+                }
+            }
+            for (index, vowel) in local_short_vowels.iter().enumerate() {
                 let mut modifier = modifier_keys.clone();
-                modifier.push_front(vowel_key_short[index]);
+                modifier.push_front(local_vowel_key_short[index]);
 
                 let mut output: Vec<char> = vec![*vowel];
                 for modifier in modifier_strs.iter() {
@@ -43,10 +57,18 @@ pub fn gen(keyboard: &mut KbdWriter) {
             }
         }
         if long {
-            for (index, vowel) in long_vowels.iter().enumerate() {
+            if capitals {
+                for letter in local_vowel_key_long.iter_mut() {
+                    *letter = letter.to_uppercase().to_string().chars().nth(0).unwrap();
+                }
+                for letter in local_long_vowels.iter_mut() {
+                    *letter = letter.to_uppercase().to_string().chars().nth(0).unwrap();
+                }
+            }
+            for (index, vowel) in local_long_vowels.iter().enumerate() {
                 let mut modifier = modifier_keys.clone();
                 modifier.push_front(modifier_map.get("macron").unwrap().0);
-                modifier.push_front(vowel_key_long[index]);
+                modifier.push_front(local_vowel_key_long[index]);
 
                 let mut output: Vec<char> = vec![*vowel];
                 for modifier in modifier_strs.iter() {
@@ -58,6 +80,42 @@ pub fn gen(keyboard: &mut KbdWriter) {
                 );
             }
         }
+    }
+    fn gen_vowels_both(
+        map: &mut KbdMap,
+        modifiers: Vec<&str>,
+        vowel_key_short: &Vec<char>,
+        short_vowels: &Vec<char>,
+        vowel_key_long: &Vec<char>,
+        long_vowels: &Vec<char>,
+        modifier_map: &HashMap<&str, (char, Option<&str>)>,
+        compositions: &CompositionMap,
+        short_or_long_selector: Option<(bool, bool)>,
+    ) {
+        gen_vowels(
+            map,
+            modifiers.clone(),
+            vowel_key_short,
+            short_vowels,
+            vowel_key_long,
+            long_vowels,
+            modifier_map,
+            compositions,
+            short_or_long_selector,
+            false,
+        );
+        gen_vowels(
+            map,
+            modifiers,
+            vowel_key_short,
+            short_vowels,
+            vowel_key_long,
+            long_vowels,
+            modifier_map,
+            compositions,
+            short_or_long_selector,
+            true,
+        );
     }
 
     fn gen_class(
@@ -75,6 +133,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
         modifier_map: &HashMap<&str, (char, Option<&str>)>,
         compositions: &CompositionMap,
         iotable: bool,
+        capitals: bool,
     ) {
         gen_vowels(
             map,
@@ -86,8 +145,9 @@ pub fn gen(keyboard: &mut KbdWriter) {
             &modifier_map,
             &compositions,
             None,
+            capitals,
         );
-        if iotable {
+        if iotable && !capitals {
             gen_vowels(
                 map,
                 base_modifiers
@@ -102,6 +162,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
                 &modifier_map,
                 &compositions,
                 None,
+                capitals,
             );
         }
         gen_vowels(
@@ -118,8 +179,9 @@ pub fn gen(keyboard: &mut KbdWriter) {
             &modifier_map,
             &compositions,
             None,
+            capitals,
         );
-        if iotable {
+        if iotable && !capitals {
             gen_vowels(
                 map,
                 base_modifiers
@@ -134,6 +196,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
                 &modifier_map,
                 &compositions,
                 None,
+                capitals,
             );
         }
         gen_vowels(
@@ -150,8 +213,9 @@ pub fn gen(keyboard: &mut KbdWriter) {
             &modifier_map,
             &compositions,
             None,
+            capitals,
         );
-        if iotable {
+        if iotable && !capitals {
             gen_vowels(
                 map,
                 base_modifiers
@@ -166,6 +230,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
                 &modifier_map,
                 &compositions,
                 None,
+                capitals,
             );
         }
         gen_vowels(
@@ -182,8 +247,9 @@ pub fn gen(keyboard: &mut KbdWriter) {
             &modifier_map,
             &compositions,
             None,
+            capitals,
         );
-        if iotable {
+        if iotable && !capitals {
             gen_vowels(
                 map,
                 base_modifiers
@@ -198,8 +264,61 @@ pub fn gen(keyboard: &mut KbdWriter) {
                 &modifier_map,
                 &compositions,
                 None,
+                capitals,
             );
         }
+    }
+
+    fn gen_class_both(
+        map: &mut KbdMap,
+        base_modifiers: Vec<&str>,
+        vowel_key: &Vec<char>,
+        vowel_key_ambiguous: &Vec<char>,
+        vowel_key_iotable_ambiguous: &Vec<char>,
+        short_vowels: &Vec<char>,
+        ambiguous_vowels: &Vec<char>,
+        iotable_vowels_ambiguous: &Vec<char>,
+        vowel_key_iotable_long: &Vec<char>,
+        long_vowels: &Vec<char>,
+        iotable_vowels_long: &Vec<char>,
+        modifier_map: &HashMap<&str, (char, Option<&str>)>,
+        compositions: &CompositionMap,
+        iotable: bool,
+    ) {
+        gen_class(
+            map,
+            base_modifiers.clone(),
+            vowel_key,
+            vowel_key_ambiguous,
+            vowel_key_iotable_ambiguous,
+            short_vowels,
+            ambiguous_vowels,
+            iotable_vowels_ambiguous,
+            vowel_key_iotable_long,
+            long_vowels,
+            iotable_vowels_long,
+            modifier_map,
+            compositions,
+            iotable,
+            false,
+        );
+        gen_class(
+            map,
+            base_modifiers,
+            vowel_key,
+            vowel_key_ambiguous,
+            vowel_key_iotable_ambiguous,
+            short_vowels,
+            ambiguous_vowels,
+            iotable_vowels_ambiguous,
+            vowel_key_iotable_long,
+            long_vowels,
+            iotable_vowels_long,
+            modifier_map,
+            compositions,
+            iotable,
+            true,
+        );
     }
     let compositions = CompositionMap::new();
 
@@ -374,7 +493,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
 
     // accents
     let mut accents_map: KbdMap = KbdMap::new();
-    gen_class(
+    gen_class_both(
         &mut accents_map,
         vec![],
         &vowel_key,
@@ -395,7 +514,18 @@ pub fn gen(keyboard: &mut KbdWriter) {
 
     let mut accents_nobreath_map: KbdMap = KbdMap::new();
     // breve
-    gen_vowels(
+    gen_vowels_both(
+        &mut accents_nobreath_map,
+        vec!["breve"],
+        &vowel_key_ambiguous,
+        &ambiguous_vowels,
+        &vowel_key_ambiguous,
+        &ambiguous_vowels,
+        &modifier_map,
+        &compositions,
+        Some((true, false)),
+    );
+    gen_vowels_both(
         &mut accents_nobreath_map,
         vec!["breve"],
         &vowel_key_ambiguous,
@@ -407,7 +537,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
         Some((true, false)),
     );
     // diaresis
-    gen_class(
+    gen_class_both(
         &mut accents_nobreath_map,
         vec!["diaresis"],
         &vowel_key_diaresis,
@@ -430,7 +560,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
 
     // smooth breathing
     let mut smooth_breathing_map = KbdMap::new();
-    gen_class(
+    gen_class_both(
         &mut smooth_breathing_map,
         vec!["smooth"],
         &vowel_key,
@@ -450,7 +580,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
 
     // rough breathing
     let mut rough_breathing_map = KbdMap::new();
-    gen_class(
+    gen_class_both(
         &mut rough_breathing_map,
         vec!["rough"],
         &vowel_key,

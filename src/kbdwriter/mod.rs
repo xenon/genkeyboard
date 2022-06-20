@@ -1,8 +1,44 @@
-use std::collections::{btree_map::Iter, BTreeMap};
+use std::{
+    collections::{btree_map::Iter, BTreeMap},
+    fmt,
+};
+
+use num_enum::{IntoPrimitive, TryFromPrimitive};
+use variant_count::VariantCount;
 
 pub mod emacs;
 pub mod list;
 pub mod vimfn;
+
+#[derive(
+    clap::ArgEnum,
+    Clone,
+    Debug,
+    enum_utils::FromStr,
+    Eq,
+    IntoPrimitive,
+    PartialEq,
+    TryFromPrimitive,
+    VariantCount,
+)]
+#[repr(u8)]
+pub enum Format {
+    List,
+    EmacsQuail,
+    VimFn,
+}
+
+impl Default for Format {
+    fn default() -> Self {
+        Format::List
+    }
+}
+
+impl fmt::Display for Format {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
 
 #[derive(Clone)]
 pub struct KbdMetaData {

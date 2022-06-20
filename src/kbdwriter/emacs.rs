@@ -40,7 +40,11 @@ impl<'a> Display for EmacsKbdWriter<'a> {
         for (section, keymap) in kbd.sections.iter() {
             writeln!(f, "  ;; {}", section)?;
             for (seq, mapped) in keymap.iter() {
-                writeln!(f, "  (\"{}\", ?{})", seq, mapped)?;
+                if mapped.chars().count() != 1 {
+                    writeln!(f, "  (\"{}\", ?\"{}\")", seq.replace("\"", "\\\""), mapped)?;
+                } else {
+                    writeln!(f, "  (\"{}\", ?{})", seq.replace("\"", "\\\""), mapped)?;
+                }
             }
         }
         // footer

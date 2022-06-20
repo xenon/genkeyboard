@@ -8,3 +8,7 @@ license = "GPL-3.0-or-later"
 [dependencies]
 unicode-normalization = "0.1.19"
 convert_case = "0.5.0"
+clap = { version = "3.2.5", features = ["derive"] }
+enum-utils = "0.1.2"
+num_enum = "0.5.7"
+variant_count = "1.1"
