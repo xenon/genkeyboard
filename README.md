@@ -65,8 +65,8 @@ This is by no means comprehensive and is only intended to give some intuition to
 - see ```src/kbdwriter/list.rs``` for an example.
 ### in general...
 - Start in ```src/kbdwriter/<MYFORMAT>.rs```
-- Create a new struct with a RefCell to a KbdWriter
-- Implement Display for the struct and use the KbdWriter
+- Create a new struct with a ```RefCell``` to a ```KbdWriter```
+- Implement ```Display``` for the struct and use the ```KbdWriter```
     - Print the metadata in a suitable way for your format
     - Print each mapping section in a suitable way for your format
 ### making it accessible by command line args
