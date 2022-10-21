@@ -5,23 +5,24 @@ use crate::{
     kbdwriter::{KbdMap, KbdMetaData, KbdWriter},
 };
 
+#[allow(clippy::too_many_arguments)]
 pub fn gen(keyboard: &mut KbdWriter) {
     fn gen_vowels(
         map: &mut KbdMap,
         modifiers: Vec<&str>,
-        vowel_key_short: &Vec<char>,
-        short_vowels: &Vec<char>,
-        vowel_key_long: &Vec<char>,
-        long_vowels: &Vec<char>,
+        vowel_key_short: &[char],
+        short_vowels: &[char],
+        vowel_key_long: &[char],
+        long_vowels: &[char],
         modifier_map: &HashMap<&str, (char, Option<&str>)>,
         compositions: &CompositionMap,
         short_or_long_selector: Option<(bool, bool)>,
         capitals: bool,
     ) {
-        let mut local_short_vowels = short_vowels.clone();
-        let mut local_vowel_key_short = vowel_key_short.clone();
-        let mut local_long_vowels = long_vowels.clone();
-        let mut local_vowel_key_long = vowel_key_long.clone();
+        let mut local_short_vowels = short_vowels.to_owned();
+        let mut local_vowel_key_short = vowel_key_short.to_owned();
+        let mut local_long_vowels = long_vowels.to_owned();
+        let mut local_vowel_key_long = vowel_key_long.to_owned();
 
         let (short, long) = short_or_long_selector.unwrap_or((true, true));
         let modifier_keys: VecDeque<char> = modifiers
@@ -30,16 +31,15 @@ pub fn gen(keyboard: &mut KbdWriter) {
             .collect();
         let modifier_strs: VecDeque<&str> = modifiers
             .iter()
-            .map(|str| modifier_map.get(str).unwrap().1)
-            .flatten()
+            .filter_map(|str| modifier_map.get(str).unwrap().1)
             .collect();
         if short {
             if capitals {
                 for letter in local_vowel_key_short.iter_mut() {
-                    *letter = letter.to_uppercase().to_string().chars().nth(0).unwrap();
+                    *letter = letter.to_uppercase().to_string().chars().next().unwrap();
                 }
                 for letter in local_short_vowels.iter_mut() {
-                    *letter = letter.to_uppercase().to_string().chars().nth(0).unwrap();
+                    *letter = letter.to_uppercase().to_string().chars().next().unwrap();
                 }
             }
             for (index, vowel) in local_short_vowels.iter().enumerate() {
@@ -59,10 +59,10 @@ pub fn gen(keyboard: &mut KbdWriter) {
         if long {
             if capitals {
                 for letter in local_vowel_key_long.iter_mut() {
-                    *letter = letter.to_uppercase().to_string().chars().nth(0).unwrap();
+                    *letter = letter.to_uppercase().to_string().chars().next().unwrap();
                 }
                 for letter in local_long_vowels.iter_mut() {
-                    *letter = letter.to_uppercase().to_string().chars().nth(0).unwrap();
+                    *letter = letter.to_uppercase().to_string().chars().next().unwrap();
                 }
             }
             for (index, vowel) in local_long_vowels.iter().enumerate() {
@@ -81,13 +81,14 @@ pub fn gen(keyboard: &mut KbdWriter) {
             }
         }
     }
+    #[allow(clippy::too_many_arguments)]
     fn gen_vowels_both(
         map: &mut KbdMap,
         modifiers: Vec<&str>,
-        vowel_key_short: &Vec<char>,
-        short_vowels: &Vec<char>,
-        vowel_key_long: &Vec<char>,
-        long_vowels: &Vec<char>,
+        vowel_key_short: &[char],
+        short_vowels: &[char],
+        vowel_key_long: &[char],
+        long_vowels: &[char],
         modifier_map: &HashMap<&str, (char, Option<&str>)>,
         compositions: &CompositionMap,
         short_or_long_selector: Option<(bool, bool)>,
@@ -118,18 +119,19 @@ pub fn gen(keyboard: &mut KbdWriter) {
         );
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn gen_class(
         map: &mut KbdMap,
         base_modifiers: Vec<&str>,
-        vowel_key: &Vec<char>,
-        vowel_key_ambiguous: &Vec<char>,
-        vowel_key_iotable_ambiguous: &Vec<char>,
-        short_vowels: &Vec<char>,
-        ambiguous_vowels: &Vec<char>,
-        iotable_vowels_ambiguous: &Vec<char>,
-        vowel_key_iotable_long: &Vec<char>,
-        long_vowels: &Vec<char>,
-        iotable_vowels_long: &Vec<char>,
+        vowel_key: &[char],
+        vowel_key_ambiguous: &[char],
+        vowel_key_iotable_ambiguous: &[char],
+        short_vowels: &[char],
+        ambiguous_vowels: &[char],
+        iotable_vowels_ambiguous: &[char],
+        vowel_key_iotable_long: &[char],
+        long_vowels: &[char],
+        iotable_vowels_long: &[char],
         modifier_map: &HashMap<&str, (char, Option<&str>)>,
         compositions: &CompositionMap,
         iotable: bool,
@@ -138,12 +140,12 @@ pub fn gen(keyboard: &mut KbdWriter) {
         gen_vowels(
             map,
             base_modifiers.clone(),
-            &vowel_key,
-            &short_vowels,
-            &vowel_key,
-            &long_vowels,
-            &modifier_map,
-            &compositions,
+            vowel_key,
+            short_vowels,
+            vowel_key,
+            long_vowels,
+            modifier_map,
+            compositions,
             None,
             capitals,
         );
@@ -155,12 +157,12 @@ pub fn gen(keyboard: &mut KbdWriter) {
                     .chain(vec!["iota"].iter())
                     .cloned()
                     .collect(),
-                &vowel_key_iotable_ambiguous,
-                &iotable_vowels_ambiguous,
-                &vowel_key_iotable_long,
-                &iotable_vowels_long,
-                &modifier_map,
-                &compositions,
+                vowel_key_iotable_ambiguous,
+                iotable_vowels_ambiguous,
+                vowel_key_iotable_long,
+                iotable_vowels_long,
+                modifier_map,
+                compositions,
                 None,
                 capitals,
             );
@@ -172,12 +174,12 @@ pub fn gen(keyboard: &mut KbdWriter) {
                 .chain(vec!["acute"].iter())
                 .cloned()
                 .collect(),
-            &vowel_key,
-            &short_vowels,
-            &vowel_key,
-            &long_vowels,
-            &modifier_map,
-            &compositions,
+            vowel_key,
+            short_vowels,
+            vowel_key,
+            long_vowels,
+            modifier_map,
+            compositions,
             None,
             capitals,
         );
@@ -189,12 +191,12 @@ pub fn gen(keyboard: &mut KbdWriter) {
                     .chain(vec!["acute", "iota"].iter())
                     .cloned()
                     .collect(),
-                &vowel_key_iotable_ambiguous,
-                &iotable_vowels_ambiguous,
-                &vowel_key_iotable_long,
-                &iotable_vowels_long,
-                &modifier_map,
-                &compositions,
+                vowel_key_iotable_ambiguous,
+                iotable_vowels_ambiguous,
+                vowel_key_iotable_long,
+                iotable_vowels_long,
+                modifier_map,
+                compositions,
                 None,
                 capitals,
             );
@@ -206,12 +208,12 @@ pub fn gen(keyboard: &mut KbdWriter) {
                 .chain(vec!["grave"].iter())
                 .cloned()
                 .collect(),
-            &vowel_key,
-            &short_vowels,
-            &vowel_key,
-            &long_vowels,
-            &modifier_map,
-            &compositions,
+            vowel_key,
+            short_vowels,
+            vowel_key,
+            long_vowels,
+            modifier_map,
+            compositions,
             None,
             capitals,
         );
@@ -223,12 +225,12 @@ pub fn gen(keyboard: &mut KbdWriter) {
                     .chain(vec!["grave", "iota"].iter())
                     .cloned()
                     .collect(),
-                &vowel_key_iotable_ambiguous,
-                &iotable_vowels_ambiguous,
-                &vowel_key_iotable_long,
-                &iotable_vowels_long,
-                &modifier_map,
-                &compositions,
+                vowel_key_iotable_ambiguous,
+                iotable_vowels_ambiguous,
+                vowel_key_iotable_long,
+                iotable_vowels_long,
+                modifier_map,
+                compositions,
                 None,
                 capitals,
             );
@@ -240,12 +242,12 @@ pub fn gen(keyboard: &mut KbdWriter) {
                 .chain(vec!["circumflex"].iter())
                 .cloned()
                 .collect(),
-            &vowel_key_ambiguous,
-            &ambiguous_vowels,
-            &vowel_key,
-            &long_vowels,
-            &modifier_map,
-            &compositions,
+            vowel_key_ambiguous,
+            ambiguous_vowels,
+            vowel_key,
+            long_vowels,
+            modifier_map,
+            compositions,
             None,
             capitals,
         );
@@ -257,30 +259,31 @@ pub fn gen(keyboard: &mut KbdWriter) {
                     .chain(vec!["circumflex", "iota"].iter())
                     .cloned()
                     .collect(),
-                &vowel_key_iotable_ambiguous,
-                &iotable_vowels_ambiguous,
-                &vowel_key_iotable_long,
-                &iotable_vowels_long,
-                &modifier_map,
-                &compositions,
+                vowel_key_iotable_ambiguous,
+                iotable_vowels_ambiguous,
+                vowel_key_iotable_long,
+                iotable_vowels_long,
+                modifier_map,
+                compositions,
                 None,
                 capitals,
             );
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn gen_class_both(
         map: &mut KbdMap,
         base_modifiers: Vec<&str>,
-        vowel_key: &Vec<char>,
-        vowel_key_ambiguous: &Vec<char>,
-        vowel_key_iotable_ambiguous: &Vec<char>,
-        short_vowels: &Vec<char>,
-        ambiguous_vowels: &Vec<char>,
-        iotable_vowels_ambiguous: &Vec<char>,
-        vowel_key_iotable_long: &Vec<char>,
-        long_vowels: &Vec<char>,
-        iotable_vowels_long: &Vec<char>,
+        vowel_key: &[char],
+        vowel_key_ambiguous: &[char],
+        vowel_key_iotable_ambiguous: &[char],
+        short_vowels: &[char],
+        ambiguous_vowels: &[char],
+        iotable_vowels_ambiguous: &[char],
+        vowel_key_iotable_long: &[char],
+        long_vowels: &[char],
+        iotable_vowels_long: &[char],
         modifier_map: &HashMap<&str, (char, Option<&str>)>,
         compositions: &CompositionMap,
         iotable: bool,

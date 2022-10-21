@@ -1,5 +1,8 @@
 use std::{
-    collections::{btree_map::Iter, BTreeMap},
+    collections::{
+        btree_map::{Entry, Iter},
+        BTreeMap,
+    },
     fmt,
 };
 
@@ -7,6 +10,7 @@ use num_enum::{IntoPrimitive, TryFromPrimitive};
 use variant_count::VariantCount;
 
 pub mod emacs;
+pub mod graphviz;
 pub mod list;
 pub mod vimfn;
 
@@ -26,6 +30,7 @@ pub enum Format {
     List,
     EmacsQuail,
     VimFn,
+    GraphViz,
 }
 
 impl Default for Format {
@@ -69,7 +74,7 @@ impl Default for KbdMetaData {
 
 pub struct KbdWriter {
     metadata: Option<KbdMetaData>,
-    sections: Vec<(String, KbdMap)>,
+    pub(crate) sections: Vec<(String, KbdMap)>,
 }
 
 impl KbdWriter {
@@ -85,8 +90,23 @@ impl KbdWriter {
     pub fn write_section(&mut self, title: String, keymap: KbdMap) {
         self.sections.push((title, keymap));
     }
+
+    pub fn subsection_writer(&self, section: &String) -> Option<KbdWriter> {
+        for (name, kbdmap) in self.sections.iter() {
+            if name == section {
+                let mut new_writer = KbdWriter::new();
+                new_writer.write_section(name.clone(), kbdmap.clone());
+                if let Some(metadata) = &self.metadata {
+                    new_writer.set_metadata(metadata.clone());
+                }
+                return Some(new_writer);
+            }
+        }
+        None
+    }
 }
 
+#[derive(Clone)]
 pub struct KbdMap {
     keymap: BTreeMap<String, String>,
 }
@@ -99,16 +119,16 @@ impl KbdMap {
     }
 
     pub fn add(&mut self, key_sequence: String, mapped_value: String) -> bool {
-        if !self.keymap.contains_key(&key_sequence) {
-            self.keymap.insert(key_sequence, mapped_value);
-            return true;
+        if let Entry::Vacant(e) = self.keymap.entry(key_sequence.clone()) {
+            e.insert(mapped_value);
+            true
         } else {
             eprintln!(
                 "Duplicated key sequence: {} for value {}",
                 key_sequence, mapped_value
             );
+            false
         }
-        return false;
     }
 
     pub fn iter(&self) -> Iter<'_, String, String> {

@@ -31,11 +31,11 @@ impl CompositionMap {
 }
 
 pub fn compose_vec(seq: Vec<char>) -> Vec<char> {
-    if seq.len() == 0 {
+    if seq.is_empty() {
         return seq;
     }
     seq[1..]
-        .into_iter()
+        .iter()
         .fold(vec![seq[0]], |mut acc, next| -> Vec<char> {
             match unicode_normalization::char::compose(*acc.last().unwrap(), *next) {
                 Some(out) => {

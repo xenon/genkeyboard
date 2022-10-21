@@ -41,9 +41,9 @@ impl<'a> Display for EmacsKbdWriter<'a> {
             writeln!(f, "  ;; {}", section)?;
             for (seq, mapped) in keymap.iter() {
                 if mapped.chars().count() != 1 {
-                    writeln!(f, "  (\"{}\", ?\"{}\")", seq.replace("\"", "\\\""), mapped)?;
+                    writeln!(f, "  (\"{}\", ?\"{}\")", seq.replace('\"', "\\\""), mapped)?;
                 } else {
-                    writeln!(f, "  (\"{}\", ?{})", seq.replace("\"", "\\\""), mapped)?;
+                    writeln!(f, "  (\"{}\", ?{})", seq.replace('\"', "\\\""), mapped)?;
                 }
             }
         }
