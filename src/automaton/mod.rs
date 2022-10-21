@@ -9,27 +9,23 @@ use crate::kbdwriter::{KbdMap, KbdWriter};
 pub struct Automaton {
     pub states: BTreeMap<u32, State>,
     pub transition: BTreeMap<(u32, char), u32>,
-    pub start_states: Vec<u32>,
+    pub start_state: u32,
 }
 
 impl Automaton {
     pub fn run(&self, str: &str) -> Option<String> {
-        let mut cur_states = self.start_states.clone();
+        let mut cur_state = self.start_state;
         for c in str.chars() {
-            let mut next_states = Vec::new();
-            for state in cur_states {
-                if let Some(next) = self.transition.get(&(state, c)) {
-                    next_states.push(*next);
-                }
+            if let Some(next_state) = self.transition.get(&(cur_state, c)) {
+                cur_state = *next_state;
+            } else {
+                return None;
             }
-            cur_states = next_states;
         }
 
-        for s in cur_states {
-            let state = self.states.get(&s).expect("Should be in map");
-            if let Some(mapped) = &state.accepting {
-                return Some(mapped.clone());
-            }
+        let state = self.states.get(&cur_state).expect("Should be in map");
+        if let Some(mapped) = &state.accepting {
+            return Some(mapped.clone());
         }
 
         None
@@ -115,7 +111,7 @@ impl Automaton {
         let mut a = Automaton {
             states: BTreeMap::new(),
             transition: BTreeMap::new(),
-            start_states: vec![start_state],
+            start_state,
         };
 
         // initialize the dfa with a start state
