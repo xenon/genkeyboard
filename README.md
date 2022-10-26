@@ -56,6 +56,7 @@ Go in the format: ```automaton <OPTIONAL> <REQUIRED> <SUBCOMMAND>```
 ```
 repl - run an interactive automaton that takes in input strings and returns mappings
 test - test one string on the automaton
+codegen - output the automaton DFA as a javascript array
 ```
 ### list-subgraphs
 Lists all the available sections in a keyboard layout.
