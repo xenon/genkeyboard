@@ -47,6 +47,7 @@ enum AutomatonCommand {
     Test {
         test: String,
     },
+    CodeGen,
 }
 
 #[derive(Parser, Default, Debug)]
@@ -188,6 +189,13 @@ fn main() {
                     } else {
                         println!("No match!");
                     }
+                }
+                AutomatonCommand::CodeGen => {
+                    let mut output = String::new();
+                    automaton
+                        .json_codegen(&mut output)
+                        .expect("Codegen shouldn't fail");
+                    println!("{}", output);
                 }
             }
         }

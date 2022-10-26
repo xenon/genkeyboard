@@ -11,8 +11,71 @@ pub struct Automaton {
     pub transition: BTreeMap<(u32, char), u32>,
     pub start_state: u32,
 }
+#[derive(Debug)]
+pub struct State {
+    pub state_num: u32,
+    pub next: BTreeMap<u32, char>,
+    pub label: String,
+    pub accepting: Option<String>,
+}
 
 impl Automaton {
+    pub fn json_codegen(&self, o: &mut String) -> std::fmt::Result {
+        writeln!(o, "let automaton = [")?;
+        for (i, (_, state)) in self.states.iter().enumerate() {
+            let accepting = if let Some(mat) = &state.accepting {
+                format!("\"{}\"", mat.clone().replace('\"', "\\\""))
+            } else {
+                "null".to_string()
+            };
+            write!(
+                o,
+                "    {{l: \"{}\", a: {}, ",
+                state.label.replace('\"', "\\\""),
+                accepting
+            )?;
+            // transitions
+            write!(o, "t: ")?;
+            let mut transitions = self
+                .transition
+                .iter()
+                .filter(|((start, _), _)| *start == state.state_num)
+                .peekable();
+            if transitions.peek().is_some() {
+                let mut add_comma = false;
+                write!(o, "new Map([")?;
+                for ((_, char), end) in transitions {
+                    if add_comma {
+                        write!(
+                            o,
+                            ",[\"{}\", {}]",
+                            char.to_string().replace('\"', "\\\""),
+                            end
+                        )?;
+                    } else {
+                        write!(
+                            o,
+                            "[\"{}\", {}]",
+                            char.to_string().replace('\"', "\\\""),
+                            end
+                        )?;
+                        add_comma = true;
+                    }
+                }
+                write!(o, "])")?;
+            } else {
+                write!(o, "null")?;
+            }
+            if i != self.states.len() - 1 {
+                writeln!(o, "}},")?;
+            } else {
+                writeln!(o, "}}")?;
+            }
+        }
+        writeln!(o, "];")?;
+        Ok(())
+    }
+
     pub fn run(&self, str: &str) -> Option<String> {
         let mut cur_state = self.start_state;
         for c in str.chars() {
@@ -34,11 +97,9 @@ impl Automaton {
     pub fn from_writer(writer: &KbdWriter) -> (Self, Vec<u32>) {
         let mut ranges = Vec::new();
         let mut iter = writer.sections.iter().peekable();
-        let (mut a, mut state_cnt) = if let Some((_, first_keymap)) = iter.peek() {
+        let (mut a, mut state_cnt) = iter.peek().map_or(Default::default(), |(_, first_keymap)| {
             Automaton::from_section(first_keymap)
-        } else {
-            return Default::default();
-        };
+        });
         ranges.push(state_cnt);
         iter.next();
         for (_, keymap) in iter {
@@ -146,15 +207,15 @@ impl Automaton {
             .enumerate()
         {
             // cluster header
-            writeln!(o, "   subgraph cluster_{} {{", cluster_num)?;
-            writeln!(o, "       style={};", style.cluster_style)?;
-            writeln!(o, "       bgcolor={};", style.cluster_bgcolor)?;
+            writeln!(o, "\tsubgraph cluster_{} {{", cluster_num)?;
+            writeln!(o, "\t\tstyle={};", style.cluster_style)?;
+            writeln!(o, "\t\tbgcolor={};", style.cluster_bgcolor)?;
             writeln!(
                 o,
-                "       node [style=filled,shape={},fillcolor={},fontcolor={}];",
+                "\t\tnode [style=filled,shape={},fillcolor={},fontcolor={}];",
                 style.cluster_node_shape, style.cluster_node_bgcolor, style.cluster_node_fontcolor,
             )?;
-            writeln!(o, "       label=\"{}\";", str)?;
+            writeln!(o, "\t\tlabel=\"{}\";", str)?;
 
             // cluster nodes
             for cur in lower_range..=*range_end {
@@ -162,26 +223,26 @@ impl Automaton {
                 if let Some(accepting_str) = &state.accepting {
                     writeln!(
                         o,
-                        "       {} [label=\"{}\"];",
+                        "\t\t{:3} [label=\"{}\"];",
                         cur,
                         accepting_str.replace('\"', "\\\"")
                     )?;
                 }
             }
             lower_range = range_end + 1;
-            writeln!(o, "   }}")?;
+            writeln!(o, "\t}}")?;
         }
         // transitions
         writeln!(
             o,
-            "   node [style=filled,fillcolor={},fontcolor={},shape={}];",
-            style.deadkey_node_bgcolor, style.deadkey_fontcolor, style.deadkey_shape
+            "\tnode [style=filled,fillcolor={},fontcolor={},shape={}];",
+            style.intermediate_node_bgcolor, style.intermediate_fontcolor, style.intermediate_shape
         )?;
         for (cur, state) in self.states.iter() {
             if *cur == 0 {
                 writeln!(
                     o,
-                    "   {} [style=filled,fillcolor={},fontcolor={},shape={},label=\"{}\"]",
+                    "\t{:3} [style=filled,fillcolor={},fontcolor={},shape={},label=\"{}\"]",
                     cur,
                     style.start_bgcolor,
                     style.start_fontcolor,
@@ -191,16 +252,18 @@ impl Automaton {
             } else if state.accepting.is_none() {
                 writeln!(
                     o,
-                    "   {} [label=\"{}\"];",
+                    "\t{:3}     \t[label=\"{}\"];",
                     cur,
                     state.label.replace('\"', "\\\"")
                 )?;
             }
             for (next, edge) in state.next.iter() {
                 if edge == &'\"' {
-                    writeln!(o, "   {} -> {} [label=\"\\\"\"];", cur, next)?;
+                    writeln!(o, "\t{:3} -> {:3}\t[label=\"\\\"\"];", cur, next)?;
+                } else if edge == &' ' {
+                    writeln!(o, "\t{:3} -> {:3}\t[label=\"space\"];", cur, next)?;
                 } else {
-                    writeln!(o, "   {} -> {} [label=\"{}\"];", cur, next, edge)?;
+                    writeln!(o, "\t{:3} -> {:3}\t[label=\"{}\"];", cur, next, edge)?;
                 }
             }
         }
@@ -216,9 +279,9 @@ pub struct AutomatonStyle {
     cluster_node_shape: String,
     cluster_node_bgcolor: String,
     cluster_node_fontcolor: String,
-    deadkey_shape: String,
-    deadkey_node_bgcolor: String,
-    deadkey_fontcolor: String,
+    intermediate_shape: String,
+    intermediate_node_bgcolor: String,
+    intermediate_fontcolor: String,
     start_bgcolor: String,
     start_fontcolor: String,
     start_shape: String,
@@ -232,20 +295,12 @@ impl Default for AutomatonStyle {
             cluster_node_shape: "circle".to_string(),
             cluster_node_bgcolor: "white".to_string(),
             cluster_node_fontcolor: "black".to_string(),
-            deadkey_shape: "circle".to_string(),
-            deadkey_node_bgcolor: "black".to_string(),
-            deadkey_fontcolor: "white".to_string(),
+            intermediate_shape: "circle".to_string(),
+            intermediate_node_bgcolor: "black".to_string(),
+            intermediate_fontcolor: "white".to_string(),
             start_bgcolor: "white".to_string(),
             start_fontcolor: "black".to_string(),
             start_shape: "ellipse".to_string(),
         }
     }
-}
-
-#[derive(Debug)]
-pub struct State {
-    pub state_num: u32,
-    pub next: BTreeMap<u32, char>,
-    pub label: String,
-    pub accepting: Option<String>,
 }
