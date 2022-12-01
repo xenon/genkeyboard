@@ -477,7 +477,7 @@ pub fn gen(keyboard: &mut KbdWriter) {
             if base_letter == *letter {
                 let mut new_seq: String = (*key_seq).to_string();
                 new_seq.push(' ');
-                final_consonants_map.add(new_seq, final_letter.to_string());
+                final_consonants_map.add(new_seq, [final_letter, ' '].iter().collect());
             }
         }
     }

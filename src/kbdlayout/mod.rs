@@ -5,6 +5,7 @@ use variant_count::VariantCount;
 
 pub mod greek;
 pub mod latin;
+pub mod russian;
 
 #[derive(
     clap::ArgEnum,
@@ -21,6 +22,7 @@ pub mod latin;
 pub enum Layout {
     Greek,
     Latin,
+    Russian,
 }
 
 impl fmt::Display for Layout {

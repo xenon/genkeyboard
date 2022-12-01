@@ -93,6 +93,9 @@ fn main() {
                 Layout::Latin => {
                     kbdlayout::latin::gen(&mut kbd, true);
                 }
+                Layout::Russian => {
+                    kbdlayout::russian::gen(&mut kbd);
+                }
             }
             for (name, _) in kbd.sections.iter() {
                 println!("{}", name);
@@ -106,6 +109,9 @@ fn main() {
                 }
                 Layout::Latin => {
                     kbdlayout::latin::gen(&mut kbd, true);
+                }
+                Layout::Russian => {
+                    kbdlayout::russian::gen(&mut kbd);
                 }
             }
             // subgraph
@@ -152,6 +158,9 @@ fn main() {
                 }
                 Layout::Latin => {
                     kbdlayout::latin::gen(&mut kbd, true);
+                }
+                Layout::Russian => {
+                    kbdlayout::russian::gen(&mut kbd);
                 }
             }
             if let Some(section) = args.subgraph {
